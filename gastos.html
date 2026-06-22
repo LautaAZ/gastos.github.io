@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mis Gastos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ECEAE2;
+    --bg-soft:#E2DFD4;
+    --paper:#FFFDF7;
+    --ink:#211F1A;
+    --ink-soft:#6B6759;
+    --green:#1F6F4F;
+    --green-soft:#E3EFE8;
+    --coral:#D6553D;
+    --coral-soft:#F7E5E0;
+    --amber:#C4862A;
+    --line:#D8D2C0;
+    --radius:18px;
+    --shadow:0 1px 2px rgba(33,31,26,.04), 0 8px 24px -8px rgba(33,31,26,.12);
+    --font-display:'JetBrains Mono', monospace;
+    --font-body:'Plus Jakarta Sans', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--ink);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(33,31,26,.05) 1px, transparent 0);
+    background-size:22px 22px;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+  :focus-visible{
+    outline:2px solid var(--green);
+    outline-offset:2px;
+  }
+  .page{
+    max-width:1040px;
+    margin:0 auto;
+    padding:40px 20px 64px;
+  }
+  .masthead{
+    text-align:center;
+    margin-bottom:32px;
+  }
+  .eyebrow{
+    font-family:var(--font-display);
+    font-size:12px;
+    letter-spacing:.22em;
+    color:var(--ink-soft);
+    margin:0 0 6px;
+  }
+  .masthead h1{
+    font-family:var(--font-display);
+    font-size:clamp(32px,5vw,46px);
+    margin:0;
+    letter-spacing:-.01em;
+  }
+  .masthead .subtitle{
+    margin:6px 0 0;
+    color:var(--ink-soft);
+    font-size:15px;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:360px 1fr;
+    gap:22px;
+    align-items:start;
+  }
+  @media (max-width:760px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--paper);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:24px;
+  }
+  .panel-title{
+    font-family:var(--font-display);
+    font-size:13px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 16px;
+  }
+
+  /* ---------- form ---------- */
+  form label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:12px;
+  }
+  form input, form select{
+    display:block;
+    width:100%;
+    margin-top:6px;
+    padding:11px 12px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    font-family:var(--font-body);
+    font-size:14.5px;
+    color:var(--ink);
+  }
+  form input:focus, form select:focus{
+    border-color:var(--green);
+  }
+  .row-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .form-error{
+    background:var(--coral-soft);
+    color:var(--coral);
+    font-size:13px;
+    font-weight:600;
+    padding:8px 12px;
+    border-radius:8px;
+    margin:-2px 0 12px;
+  }
+  .form-actions{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-top:4px;
+  }
+  .btn-primary{
+    flex:1;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    padding:13px 16px;
+    border-radius:10px;
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:14.5px;
+    cursor:pointer;
+    transition:transform .12s ease, background .12s ease;
+  }
+  .btn-primary:hover{ background:var(--green); }
+  .btn-primary:active{ transform:scale(.98); }
+  .btn-text{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-size:13px;
+    font-weight:600;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:0;
+  }
+
+  /* ---------- summary ---------- */
+  .summary{
+    margin-top:24px;
+    padding-top:20px;
+    border-top:1.5px dashed var(--line);
+  }
+  .summary-total{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:14px;
+  }
+  .summary-label{
+    font-size:13px;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+  .summary-value{
+    font-family:var(--font-display);
+    font-size:28px;
+    font-weight:700;
+  }
+  .summary-stats{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .summary-stats > div{
+    flex:1;
+    background:var(--bg-soft);
+    border-radius:10px;
+    padding:10px 12px;
+    text-align:center;
+  }
+  .summary-stats span{
+    display:block;
+    font-family:var(--font-display);
+    font-size:16px;
+    font-weight:700;
+  }
+  .summary-stats small{
+    font-size:11px;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+  .cat-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    margin-bottom:8px;
+  }
+  .cat-row .cat-name{
+    width:108px;
+    flex:none;
+    color:var(--ink-soft);
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .cat-bar-track{
+    flex:1;
+    height:7px;
+    border-radius:4px;
+    background:var(--bg-soft);
+    overflow:hidden;
+  }
+  .cat-bar-fill{
+    height:100%;
+    background:var(--green);
+    border-radius:4px;
+  }
+  .cat-row .cat-amt{
+    font-family:var(--font-display);
+    font-size:12.5px;
+    width:62px;
+    flex:none;
+    text-align:right;
+  }
+
+  /* ---------- receipt panel ---------- */
+  .receipt-toolbar{
+    display:flex;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .receipt-toolbar input{
+    flex:1;
+    padding:10px 12px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    font-family:var(--font-body);
+    font-size:14px;
+  }
+  .receipt-toolbar select{
+    padding:10px 12px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    font-family:var(--font-body);
+    font-size:14px;
+    background:#fff;
+  }
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:18px;
+  }
+  .chip{
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:999px;
+    padding:5px 12px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .chip.active{
+    background:var(--ink);
+    color:var(--paper);
+    border-color:var(--ink);
+  }
+
+  .receipt{
+    background:var(--paper);
+    border:1.5px dashed var(--line);
+    border-radius:14px;
+    padding:20px 18px 0;
+  }
+  .receipt-head{
+    display:flex;
+    font-family:var(--font-display);
+    font-size:11px;
+    letter-spacing:.1em;
+    color:var(--ink-soft);
+    padding-bottom:10px;
+    border-bottom:1.5px solid var(--ink);
+  }
+  .receipt-head span:nth-child(1){width:78px;flex:none;}
+  .receipt-head span:nth-child(2){flex:1;}
+  .receipt-head span:nth-child(3){width:90px;flex:none;text-align:right;}
+
+  .receipt-item{
+    display:flex;
+    align-items:flex-start;
+    padding:12px 0;
+    border-bottom:1px dotted var(--line);
+    animation:rowIn .25s ease;
+  }
+  @keyframes rowIn{
+    from{opacity:0; transform:translateY(-4px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .r-date{
+    width:78px;
+    flex:none;
+    font-family:var(--font-display);
+    font-size:11.5px;
+    color:var(--ink-soft);
+    padding-top:2px;
+  }
+  .r-mid{ flex:1; min-width:0; }
+  .r-desc{
+    font-weight:600;
+    font-size:14.5px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .r-tags{
+    display:flex;
+    gap:6px;
+    margin-top:4px;
+  }
+  .r-tag{
+    font-size:11px;
+    font-weight:600;
+    padding:2px 7px;
+    border-radius:999px;
+  }
+  .r-tag.cat{ background:var(--green-soft); color:var(--green); }
+  .r-tag.medio{ background:var(--bg-soft); color:var(--ink-soft); }
+  .r-right{
+    width:90px;
+    flex:none;
+    text-align:right;
+  }
+  .r-amount{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:14.5px;
+  }
+  .r-actions{
+    display:flex;
+    gap:6px;
+    justify-content:flex-end;
+    margin-top:6px;
+  }
+  .r-actions button{
+    border:none;
+    background:none;
+    cursor:pointer;
+    font-size:13px;
+    padding:2px 4px;
+    color:var(--ink-soft);
+    opacity:.7;
+  }
+  .r-actions button:hover{ opacity:1; color:var(--ink); }
+  .r-actions button.del:hover{ color:var(--coral); }
+
+  .receipt-empty{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14px;
+    padding:40px 10px;
+    line-height:1.6;
+  }
+
+  .receipt-divider{
+    border-top:1.5px solid var(--ink);
+    margin-top:4px;
+  }
+  .receipt-grand{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-family:var(--font-display);
+    padding:14px 0 6px;
+  }
+  .receipt-grand span:first-child{
+    font-size:13px;
+    letter-spacing:.12em;
+    color:var(--ink-soft);
+  }
+  .receipt-grand span:last-child{
+    font-size:22px;
+    font-weight:700;
+  }
+  .barcode{
+    height:34px;
+    margin:10px 0 16px;
+    background:repeating-linear-gradient(
+      90deg,
+      var(--ink) 0px, var(--ink) 2px,
+      transparent 2px, transparent 5px,
+      var(--ink) 5px, var(--ink) 6px,
+      transparent 6px, transparent 10px,
+      var(--ink) 10px, var(--ink) 13px,
+      transparent 13px, transparent 16px
+    );
+    opacity:.85;
+  }
+  .perforation{
+    height:14px;
+    margin:0 -18px;
+    background:radial-gradient(circle, var(--bg) 7px, transparent 7.5px) 0 -7px / 22px 14px repeat-x;
+  }
+  .toolbar-export{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:14px;
+  }
+  .toolbar-export button{
+    background:none;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:7px 14px;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .toolbar-export button:hover{ border-color:var(--ink); color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="masthead">
+    <p class="eyebrow">REGISTRO PERSONAL</p>
+    <h1>Mis Gastos</h1>
+    <p class="subtitle">Cada peso, anotado.</p>
+  </header>
+
+  <main class="layout">
+
+    <section class="panel form-panel">
+      <h2 class="panel-title">Nuevo gasto</h2>
+      <form id="form">
+        <label>Descripción
+          <input id="desc" placeholder="Ej: Almuerzo en el bar" autocomplete="off">
+        </label>
+        <div class="row-2">
+          <label>Categoría
+            <select id="cat">
+              <option value="Comida">🍔 Comida</option>
+              <option value="Transporte">🚌 Transporte</option>
+              <option value="Facultad">🎓 Facultad</option>
+              <option value="Suscripciones">📺 Suscripciones</option>
+              <option value="Ropa">👕 Ropa</option>
+              <option value="Salidas">🎉 Salidas</option>
+              <option value="Otros">🧾 Otros</option>
+            </select>
+          </label>
+          <label>Medio de pago
+            <select id="medio">
+              <option value="Mercado Pago">📲 Mercado Pago</option>
+              <option value="Efectivo">💵 Efectivo</option>
+              <option value="Banco">🏦 Banco</option>
+              <option value="Tarjeta">💳 Tarjeta</option>
+            </select>
+          </label>
+        </div>
+        <div class="row-2">
+          <label>Monto
+            <input id="monto" type="number" min="0" step="0.01" placeholder="0">
+          </label>
+          <label>Fecha
+            <input id="fecha" type="date">
+          </label>
+        </div>
+        <p id="formError" class="form-error" hidden></p>
+        <div class="form-actions">
+          <button type="submit" id="submitBtn" class="btn-primary">Agregar gasto</button>
+          <button type="button" id="cancelBtn" class="btn-text" hidden>Cancelar</button>
+        </div>
+      </form>
+
+      <div class="summary">
+        <div class="summary-total">
+          <span class="summary-label">Total mostrado</span>
+          <span class="summary-value" id="total">$0</span>
+        </div>
+        <div class="summary-stats">
+          <div><span id="cantidad">0</span><small>gastos</small></div>
+          <div><span id="promedio">$0</span><small>promedio</small></div>
+        </div>
+        <div id="catBreakdown"></div>
+      </div>
+    </section>
+
+    <section class="panel receipt-panel">
+      <div class="receipt-toolbar">
+        <input id="buscar" placeholder="Buscar por descripción...">
+        <select id="filtroMes"></select>
+      </div>
+      <div class="chip-row" id="chipRow"></div>
+
+      <div class="receipt">
+        <div class="receipt-head">
+          <span>FECHA</span><span>DETALLE</span><span>MONTO</span>
+        </div>
+        <div id="tabla"></div>
+        <div class="receipt-empty" id="emptyState" hidden></div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-grand">
+          <span>TOTAL</span><span id="totalReceipt">$0</span>
+        </div>
+        <div class="barcode"></div>
+      </div>
+      <div class="perforation"></div>
+      <div class="toolbar-export">
+        <button id="exportBtn" type="button">⬇ Exportar CSV</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+const catIcons = {
+  'Comida':'🍔','Transporte':'🚌','Facultad':'🎓','Suscripciones':'📺',
+  'Ropa':'👕','Salidas':'🎉','Otros':'🧾'
+};
+const medioIcons = {
+  'Mercado Pago':'📲','Efectivo':'💵','Banco':'🏦','Tarjeta':'💳'
+};
+
+let gastos = [];
+let editIndex = null;
+let activeCats = new Set();
+
+const $ = (id) => document.getElementById(id);
+
+function fmt(n){
+  return '$' + Number(n).toLocaleString('es-AR', {maximumFractionDigits:2});
+}
+
+/* ---------- storage: works inside the Claude artifact AND as a standalone file ---------- */
+async function loadGastos(){
+  try{
+    if (window.storage){
+      const r = await window.storage.get('gastos');
+      return r ? JSON.parse(r.value) : [];
+    }
+  }catch(e){ /* key didn't exist yet */ }
+  try{
+    const raw = localStorage.getItem('gastos');
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+async function persist(){
+  try{
+    if (window.storage){
+      await window.storage.set('gastos', JSON.stringify(gastos));
+      return;
+    }
+  }catch(e){ console.error(e); }
+  try{ localStorage.setItem('gastos', JSON.stringify(gastos)); }catch(e){}
+}
+
+/* ---------- form ---------- */
+$('form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  agregar();
+});
+$('cancelBtn').addEventListener('click', cancelarEdicion);
+$('buscar').addEventListener('input', render);
+$('filtroMes').addEventListener('change', render);
+$('exportBtn').addEventListener('click', exportarCSV);
+
+function leerForm(){
+  return {
+    fecha: $('fecha').value,
+    desc: $('desc').value.trim(),
+    cat: $('cat').value,
+    monto: Number($('monto').value),
+    medio: $('medio').value
+  };
+}
+
+function mostrarError(msg){
+  const el = $('formError');
+  el.textContent = msg;
+  el.hidden = false;
+}
+function ocultarError(){ $('formError').hidden = true; }
+
+async function agregar(){
+  ocultarError();
+  const g = leerForm();
+  if (!g.desc){ mostrarError('Escribí una descripción.'); return; }
+  if (!g.monto || g.monto <= 0){ mostrarError('El monto tiene que ser mayor a 0.'); return; }
+  if (!g.fecha){ g.fecha = new Date().toISOString().slice(0,10); }
+
+  if (editIndex !== null){
+    gastos[editIndex] = g;
+    cancelarEdicion();
+  } else {
+    gastos.unshift(g);
+  }
+  await persist();
+  limpiarForm();
+  render();
+}
+
+function limpiarForm(){
+  $('desc').value = '';
+  $('monto').value = '';
+  $('fecha').value = new Date().toISOString().slice(0,10);
+  $('desc').focus();
+}
+
+function editar(i){
+  const g = gastos[i];
+  $('desc').value = g.desc;
+  $('cat').value = g.cat;
+  $('medio').value = g.medio;
+  $('monto').value = g.monto;
+  $('fecha').value = g.fecha;
+  editIndex = i;
+  $('submitBtn').textContent = 'Guardar cambios';
+  $('cancelBtn').hidden = false;
+  window.scrollTo({top:0, behavior:'smooth'});
+  $('desc').focus();
+}
+function cancelarEdicion(){
+  editIndex = null;
+  $('submitBtn').textContent = 'Agregar gasto';
+  $('cancelBtn').hidden = true;
+  limpiarForm();
+}
+
+async function borrar(i){
+  gastos.splice(i,1);
+  await persist();
+  render();
+}
+
+/* ---------- filtros ---------- */
+function mesesDisponibles(){
+  const set = new Set(gastos.map(g => (g.fecha || '').slice(0,7)).filter(Boolean));
+  return [...set].sort().reverse();
+}
+function monthLabel(ym){
+  const [y,m] = ym.split('-');
+  const d = new Date(Number(y), Number(m)-1, 1);
+  const s = d.toLocaleDateString('es-AR', {month:'long', year:'numeric'});
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function actualizarFiltroMes(){
+  const sel = $('filtroMes');
+  const prev = sel.value;
+  const meses = mesesDisponibles();
+  sel.innerHTML = '<option value="">Todos los meses</option>' +
+    meses.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  if (meses.includes(prev)) sel.value = prev;
+}
+function actualizarChips(){
+  const cats = [...new Set(gastos.map(g => g.cat))];
+  const row = $('chipRow');
+  row.innerHTML = cats.map(c =>
+    `<button type="button" class="chip ${activeCats.has(c)?'active':''}" data-cat="${c}">${catIcons[c]||''} ${c}</button>`
+  ).join('');
+  row.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = btn.dataset.cat;
+      activeCats.has(c) ? activeCats.delete(c) : activeCats.add(c);
+      render();
+    });
+  });
+}
+
+function gastosFiltrados(){
+  const mes = $('filtroMes').value;
+  const q = $('buscar').value.trim().toLowerCase();
+  return gastos.filter(g => {
+    if (mes && (g.fecha||'').slice(0,7) !== mes) return false;
+    if (activeCats.size && !activeCats.has(g.cat)) return false;
+    if (q && !g.desc.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+/* ---------- render ---------- */
+function render(){
+  actualizarFiltroMes();
+  actualizarChips();
+
+  const lista = gastosFiltrados();
+  const tabla = $('tabla');
+  const empty = $('emptyState');
+
+  if (lista.length === 0){
+    tabla.innerHTML = '';
+    empty.hidden = false;
+    empty.textContent = gastos.length === 0
+      ? 'Todavía no hay nada acá. Sumá tu primer gasto del lado izquierdo ↖'
+      : 'Ningún gasto coincide con este filtro.';
+  } else {
+    empty.hidden = true;
+    tabla.innerHTML = lista.map(g => {
+      const i = gastos.indexOf(g);
+      return `
+        <div class="receipt-item">
+          <div class="r-date">${(g.fecha||'').split('-').reverse().join('/')}</div>
+          <div class="r-mid">
+            <div class="r-desc">${escapeHtml(g.desc)}</div>
+            <div class="r-tags">
+              <span class="r-tag cat">${catIcons[g.cat]||''} ${g.cat}</span>
+              <span class="r-tag medio">${medioIcons[g.medio]||''} ${g.medio}</span>
+            </div>
+          </div>
+          <div class="r-right">
+            <div class="r-amount">${fmt(g.monto)}</div>
+            <div class="r-actions">
+              <button type="button" title="Editar" onclick="editar(${i})">✎</button>
+              <button type="button" class="del" title="Borrar" onclick="borrar(${i})">✕</button>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  const total = lista.reduce((a,g) => a + g.monto, 0);
+  $('total').textContent = fmt(total);
+  $('totalReceipt').textContent = fmt(total);
+  $('cantidad').textContent = lista.length;
+  $('promedio').textContent = fmt(lista.length ? total / lista.length : 0);
+
+  renderBreakdown(lista, total);
+}
+
+function renderBreakdown(lista, total){
+  const porCat = {};
+  lista.forEach(g => { porCat[g.cat] = (porCat[g.cat]||0) + g.monto; });
+  const entries = Object.entries(porCat).sort((a,b) => b[1]-a[1]);
+  const max = entries.length ? entries[0][1] : 0;
+
+  $('catBreakdown').innerHTML = entries.map(([cat, monto]) => `
+    <div class="cat-row">
+      <span class="cat-name">${catIcons[cat]||''} ${cat}</span>
+      <span class="cat-bar-track"><span class="cat-bar-fill" style="width:${max? (monto/max*100):0}%"></span></span>
+      <span class="cat-amt">${fmt(monto)}</span>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function exportarCSV(){
+  if (!gastos.length) return;
+  const header = 'Fecha,Descripción,Categoría,Monto,Medio de pago\n';
+  const rows = gastos.map(g =>
+    `${g.fecha},"${g.desc.replace(/"/g,'""')}",${g.cat},${g.monto},${g.medio}`
+  ).join('\n');
+  const blob = new Blob([header + rows], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'gastos.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- init ---------- */
+async function init(){
+  $('fecha').value = new Date().toISOString().slice(0,10);
+  gastos = await loadGastos();
+  render();
+}
+init();
+</script>
+</body>
+</html>
